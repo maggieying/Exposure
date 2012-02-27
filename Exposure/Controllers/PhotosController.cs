@@ -15,10 +15,17 @@ namespace Exposure.Controllers
         readonly string flickrUriBase = "http://api.flickr.com/services/rest/";
         const int pageSize = 10;
 
-        public Task<IQueryable<Photo>> Search(string text, int page = 1)
+        // GET api/Photos/Search?text=seattle
+        // GET api/Photos/Search?text=seattle&page=3
+        public Task<IQueryable<Photo>> Search(string text, DateTime? minTakenDate = null, DateTime? maxTakenDate = null, int page = 1)
         {
-            var url = string.Format(flickrUriBase + "?method={0}&text={1}&per_page={2}&page={3}&format=json&nojsoncallback=1&extras=views&api_key={4}",
-                "flickr.photos.search", text, pageSize, page, flickrApiKey);
+            var url = string.Format(flickrUriBase + "?method=flickr.photos.search" + 
+                "&text={0}&per_page={1}&page={2}{3}{4}&extras=views,owner_name,date_upload{5}" +
+                "&format=json&nojsoncallback=1&api_key=" + flickrApiKey,
+                text, pageSize, page,
+                (minTakenDate == null) ? string.Empty : "&min_taken_date=" + minTakenDate.Value.ToString("yyyy-MM-dd"), 
+                (maxTakenDate == null) ? string.Empty : "&max_taken_date=" + maxTakenDate.Value.ToString("yyyy-MM-dd"),
+                (minTakenDate == null && maxTakenDate == null)? string.Empty : ",date_taken");
 
             return CallFlickrAPI(url).ContinueWith((task) =>
             {
@@ -27,12 +34,17 @@ namespace Exposure.Controllers
             });
         }
 
-        public Task<IQueryable<Photo>> GetInteresting(DateTime? date, int page = 1)
+        // GET api/Photos/GetInteresting
+        // GET api/Photos/GetInteresting?date=2012-01-30
+        // GET api/Photos/GetInteresting?date=2012-01-30&page=3
+        public Task<IQueryable<Photo>> GetInteresting(DateTime? date = null, int page = 1)
         {
             var exploredDate = (date != null) ? date.Value : DateTime.Now.Subtract(TimeSpan.FromDays(1));
 
-            var url = string.Format(flickrUriBase + "?method={0}&date={1}&per_page={2}&page={3}&format=json&nojsoncallback=1&extras=views&api_key={4}",
-                "flickr.interestingness.getList", exploredDate.ToString("yyyy-MM-dd"), pageSize, page, flickrApiKey);
+            var url = string.Format(flickrUriBase + "?method=flickr.interestingness.getList" + 
+                "&date={0}&per_page={1}&page={2}" + 
+                "&format=json&nojsoncallback=1&extras=views&api_key=" + flickrApiKey,
+                exploredDate.ToString("yyyy-MM-dd"), pageSize, page);
 
             return CallFlickrAPI(url).ContinueWith((task) =>
             {

@@ -39,12 +39,11 @@ namespace Exposure.Controllers
         // GET api/Photos/GetInteresting?date=2012-01-30&page=3
         public Task<IQueryable<Photo>> GetInteresting(DateTime? date = null, int page = 1)
         {
-            var exploredDate = (date != null) ? date.Value : DateTime.Now.Subtract(TimeSpan.FromDays(1));
-
             var url = string.Format(flickrUriBase + "?method=flickr.interestingness.getList" +
-                "&date={0}&per_page={1}&page={2}&extras=views,owner_name,date_upload" +
+                "{0}&per_page={1}&page={2}&extras=views,owner_name,date_upload" +
                 "&format=json&nojsoncallback=1&api_key=" + flickrApiKey,
-                exploredDate.ToString("yyyy-MM-dd"), pageSize, page);
+                (date == null)? string.Empty : "&date=" + date.Value.ToString("yyyy-MM-dd"), 
+                pageSize, page);
 
             return CallFlickrAPI(url).ContinueWith((task) =>
             {
@@ -71,10 +70,9 @@ namespace Exposure.Controllers
 
         private IEnumerable<Photo> ParseJson(string jsonResponse)
         {
-            dynamic photos = JsonValue.Parse(jsonResponse);
-
             try
             {
+                dynamic photos = JsonValue.Parse(jsonResponse);
                 JsonArray photosArray = photos.photos.photo;
 
                 return (from dynamic photo in photosArray

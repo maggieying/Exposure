@@ -28,5 +28,12 @@ namespace Exposure.Controllers
 
             return View();
         }
+
+        public ActionResult Personal()
+        {
+            ViewBag.Title = "Personal Page";
+
+            return View();
+        }
     }
 }

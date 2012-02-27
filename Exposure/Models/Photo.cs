@@ -1,4 +1,5 @@
-﻿namespace Exposure.Controllers
+﻿using System;
+namespace Exposure.Controllers
 {
     public class Photo
     {
@@ -6,7 +7,9 @@
         public string Id { get; set; }
         public string Title { get; set; }
         public int Views { get; set; }
+        public string Src { get; set; }
         public string Url { get; set; }
+        public DateTime? UploadedTime { get; set; }
 
         public string Secret { get; set; }
         public string Server { get; set; }

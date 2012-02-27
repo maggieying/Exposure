@@ -40,9 +40,9 @@ namespace Exposure.Controllers
         public Task<IQueryable<Photo>> GetInteresting(DateTime? date = null, int page = 1)
         {
             var url = string.Format(flickrUriBase + "?method=flickr.interestingness.getList" +
-                "{0}&per_page={1}&page={2}&extras=views,owner_name,date_upload" +
+                "{0}&per_page={1}&page={2}&extras=views,owner_name" +
                 "&format=json&nojsoncallback=1&api_key=" + flickrApiKey,
-                (date == null)? string.Empty : "&date=" + date.Value.ToString("yyyy-MM-dd"), 
+                (date == null) ? string.Empty : "&date=" + date.Value.ToString("yyyy-MM-dd"),
                 pageSize, page);
 
             return CallFlickrAPI(url).ContinueWith((task) =>
@@ -57,7 +57,7 @@ namespace Exposure.Controllers
         public Task<IQueryable<Photo>> GetFavorites(string userId, int page = 1)
         {
             var url = string.Format(flickrUriBase + "?method=flickr.favorites.getPublicList" +
-                "&user_id={0}&per_page={1}&page={2}&extras=views" +
+                "&user_id={0}&per_page={1}&page={2}&extras=views,owner_name" +
                 "&format=json&nojsoncallback=1&api_key=" + flickrApiKey,
                 userId, pageSize, page);
 
@@ -68,7 +68,7 @@ namespace Exposure.Controllers
             });
         }
 
-        private IEnumerable<Photo> ParseJson(string jsonResponse)
+        IEnumerable<Photo> ParseJson(string jsonResponse)
         {
             try
             {
@@ -82,8 +82,10 @@ namespace Exposure.Controllers
                             Title = photo.title,
                             Owner = photo.owner,
                             Views = photo.views,
-                            Url = string.Format("http://farm{0}.staticflickr.com/{1}/{2}_{3}.jpg",
-                                                photo.farm, (int)photo.server, (string)photo.id, (string)photo.secret),
+                            Src = string.Format("http://farm{0}.staticflickr.com/{1}/{2}_{3}.jpg",
+                                photo.farm, (int)photo.server, (string)photo.id, (string)photo.secret),
+                            Url = string.Format("http://www.flickr.com/photos/{0}/{1}", (string)photo.owner, (string)photo.id),
+                            UploadedTime = (photo.dateupload == null) ? null : ConvertToDateTime((double)photo.dateupload),
                             Farm = photo.farm,
                             Server = photo.server,
                             Secret = photo.secret
@@ -95,7 +97,13 @@ namespace Exposure.Controllers
             }
         }
 
-        private Task<string> CallFlickrAPI(string url)
+        DateTime? ConvertToDateTime(double unixTimeStamp)
+        {
+            DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, 0);
+            return new DateTime?(origin.AddSeconds(unixTimeStamp));
+        }
+
+        Task<string> CallFlickrAPI(string url)
         {
             using (var httpClient = new HttpClient())
             {

@@ -71,22 +71,30 @@ namespace Exposure.Controllers
 
         private IEnumerable<Photo> ParseJson(string jsonResponse)
         {
-            dynamic photos = JsonValue.Parse(jsonResponse);            
-            JsonArray photosArray = photos.photos.photo;
+            dynamic photos = JsonValue.Parse(jsonResponse);
 
-            return (from dynamic photo in photosArray
-                    select new Photo
-                    {
-                        Id = photo.id,
-                        Title = photo.title,
-                        Owner = photo.owner,
-                        Views = photo.views,
-                        Url = string.Format("http://farm{0}.staticflickr.com/{1}/{2}_{3}.jpg",
-                                            photo.farm, (int)photo.server, (string)photo.id, (string)photo.secret),
-                        Farm = photo.farm,
-                        Server = photo.server,
-                        Secret = photo.secret
-                    });
+            try
+            {
+                JsonArray photosArray = photos.photos.photo;
+
+                return (from dynamic photo in photosArray
+                        select new Photo
+                        {
+                            Id = photo.id,
+                            Title = photo.title,
+                            Owner = photo.owner,
+                            Views = photo.views,
+                            Url = string.Format("http://farm{0}.staticflickr.com/{1}/{2}_{3}.jpg",
+                                                photo.farm, (int)photo.server, (string)photo.id, (string)photo.secret),
+                            Farm = photo.farm,
+                            Server = photo.server,
+                            Secret = photo.secret
+                        });
+            }
+            catch (Exception ex)
+            {
+                throw new HttpResponseException("An exception occurs when trying to parse this response: " + jsonResponse, ex);
+            }
         }
 
         private Task<string> CallFlickrAPI(string url)

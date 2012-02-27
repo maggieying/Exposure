@@ -42,8 +42,8 @@ namespace Exposure.Controllers
             var exploredDate = (date != null) ? date.Value : DateTime.Now.Subtract(TimeSpan.FromDays(1));
 
             var url = string.Format(flickrUriBase + "?method=flickr.interestingness.getList" +
-                "&date={0}&per_page={1}&page={2}" +
-                "&format=json&nojsoncallback=1&extras=views&api_key=" + flickrApiKey,
+                "&date={0}&per_page={1}&page={2}&extras=views,owner_name,date_upload" +
+                "&format=json&nojsoncallback=1&api_key=" + flickrApiKey,
                 exploredDate.ToString("yyyy-MM-dd"), pageSize, page);
 
             return CallFlickrAPI(url).ContinueWith((task) =>
@@ -57,11 +57,9 @@ namespace Exposure.Controllers
         // GET api/Photos/GetFavorite?userId=56795034@N00&page=3
         public Task<IQueryable<Photo>> GetFavorites(string userId, int page = 1)
         {
-            //var exploredDate = (date != null) ? date.Value : DateTime.Now.Subtract(TimeSpan.FromDays(1));
-
             var url = string.Format(flickrUriBase + "?method=flickr.favorites.getPublicList" +
-                "&user_id={0}&per_page={1}&page={2}" +
-                "&format=json&nojsoncallback=1&extras=views&api_key=" + flickrApiKey,
+                "&user_id={0}&per_page={1}&page={2}&extras=views" +
+                "&format=json&nojsoncallback=1&api_key=" + flickrApiKey,
                 userId, pageSize, page);
 
             return CallFlickrAPI(url).ContinueWith((task) =>

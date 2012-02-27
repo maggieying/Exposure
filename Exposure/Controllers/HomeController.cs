@@ -29,11 +29,15 @@ namespace Exposure.Controllers
             return View();
         }
 
-        public ActionResult Personal()
+        public ActionResult Explore(int index = 1)
         {
-            ViewBag.Title = "Personal Page";
+            ViewBag.Title = "Explore Photos";
 
-            return View();
+            var photoController = new PhotosController();
+            var result = photoController.GetInteresting(null, index);
+            var photos = result.Result;
+
+            return View(photos);
         }
     }
 }

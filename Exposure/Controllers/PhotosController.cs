@@ -85,7 +85,7 @@ namespace Exposure.Controllers
                             Src = string.Format("http://farm{0}.staticflickr.com/{1}/{2}_{3}.jpg",
                                 photo.farm, (int)photo.server, (string)photo.id, (string)photo.secret),
                             Url = string.Format("http://www.flickr.com/photos/{0}/{1}", (string)photo.owner, (string)photo.id),
-                            UploadedTime = (photo.dateupload == null) ? null : ConvertToDateTime((double)photo.dateupload),
+                            UploadedTime = (photo.dateupload == null || photo.dateupload.ToString() == "Default") ? null : ConvertToDateTime(photo.dateupload),
                             Farm = photo.farm,
                             Server = photo.server,
                             Secret = photo.secret
